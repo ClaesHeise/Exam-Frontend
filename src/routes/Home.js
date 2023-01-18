@@ -40,7 +40,7 @@ const Home = () => {
       {isLoggedIn ? 
       ( 
         <Container fluid>
-          <h2>You are logged in</h2>
+          <h2>You are logged in {user}</h2>
         </Container>
       ) : 
       (

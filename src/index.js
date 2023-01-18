@@ -8,8 +8,9 @@ import Header from './routes/Header';
 import Home from './routes/Home';
 import Login from './routes/Login';
 import CreateAcc from './routes/CreateAcc';
-import AdminPage, {CreateAccount, UpdateAccount, DeleteAccount} from './routes/AdminPage';
-import Scoreboard from './routes/Scoreboard';
+import AdminPage, {CreateAccount, CreateMatch, CreateLocation, UpdateMatch, UpdateAccount, DeleteAccount} from './routes/AdminPage';
+import Matches from './routes/Matches';
+import MyMatches from './routes/MyMatches';
 import reportWebVitals from './reportWebVitals';
 import facade from './facades/apiFacade';
 
@@ -26,10 +27,14 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="createacc" element={<CreateAcc />}/>
         <Route path="adminPage" element={<AdminPage />}>
           <Route path="createAccount" element={<CreateAccount />} />
+          <Route path="createMatch" element={<CreateMatch />} />
+          <Route path="createLocation" element={<CreateLocation />} />
+          <Route path="updateMatch" element={<UpdateMatch />} />
           <Route path="updateAccount" element={<UpdateAccount />} />
           <Route path="deleteAccount" element={<DeleteAccount />} />
         </Route>
-        <Route path="scoreboard" element={<Scoreboard />}/>
+        <Route path="Matches" element={<Matches />}/>
+        <Route path="MyMatches" element={<MyMatches />}/>
       {/* </Route> */}
       <Route 
         path="*"

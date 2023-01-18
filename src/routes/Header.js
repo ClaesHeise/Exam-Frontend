@@ -8,16 +8,18 @@ import { useEffect, useState } from 'react'
 function Header() {
   const [log, setLog] = useState("Login");
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [role, setRole] = useState("user");
   
   useEffect(() => {
     if (facade.getToken() !== null) {
-      facade.getUserFromToken(setLog)
+      facade.getUserFromToken(setLog, setRole)
     }
-  }, [isLoggedIn])
+  }, [isLoggedIn, role])
   
   useEffect(() => {
     if (log === "Login") {
       setIsLoggedIn(false)
+      setRole(facade.getRole());
     } else {
       setIsLoggedIn(true)
     }
@@ -29,9 +31,10 @@ function Header() {
         <Container>
           <Navbar.Brand as={NavLink} to ="/"> Programming exam!</Navbar.Brand>
         <Nav>
-          <Nav.Link as={NavLink} to="/scoreboard">Table page</Nav.Link>
+          <Nav.Link as={NavLink} to="/matches">Matches</Nav.Link>
           {/* <Nav.Link as={NavLink} to="/createacc">Create Account</Nav.Link> */}
-          {isLoggedIn ? (<Nav.Link as={NavLink} to="/adminPage">Admin page</Nav.Link>) : (<></>)}
+          {role==="admin" ? (<Nav.Link as={NavLink} to="/adminPage">Admin page</Nav.Link>) : (<></>)}
+          {role==="player" ? (<Nav.Link as={NavLink} to="/MyMatches">My matches</Nav.Link>) : (<></>)}
           <Nav.Link as={NavLink} to="/login">{log}</Nav.Link>
         </Nav>
         </Container>

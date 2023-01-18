@@ -28,11 +28,18 @@ const logout = () => {
 
 let user = "No user";
 
+let role = "user";
+
 let loggedIn = false;
 
 
-const setUser = (userResult) => {
+const setUser = (userResult, varRole) => {
   user = userResult;
+  role = varRole;
+}
+
+const getRole = () => {
+  return role;
 }
 
 const getUser = () => {
@@ -47,7 +54,7 @@ const getLog = () => {
   return loggedIn;
 }
 
-const getUserFromToken = (setLogginText) => {
+const getUserFromToken = (setLogginText, setRoleHead) => {
   setLog(true)
   const options = makeOptions("POST", true)
   return fetch(URL + "/user/verify", options)
@@ -56,8 +63,9 @@ const getUserFromToken = (setLogginText) => {
       if ("code" in json) {
         logout()
       } else {
-        setUser(json.username)
-        setLogginText("Logout")
+        setUser(json.username, json.role[0]);
+        setRoleHead(json.role[0]);
+        setLogginText("Logout");
       }
     })
 }
@@ -69,17 +77,29 @@ const login = (user, password) => {
       .then(handleHttpErrors)
       .then(res => {
         setToken(res.token);
+        console.log(res)
         setUser(res.username);
         setLog(true);
       })
 }
 
-//Create function
-const createUser = async (user, password, roles) => {
-    const options = makeOptions("POST", true,{name: user, password: password, roles: roles});
-    await fetch(URL + "/user", options)
+//Create functions
+const createUser = async (user, password, phone, email, roles) => {
+  const options = makeOptions("POST", true,{name: user, password: password, phone: phone, email: email, roles: roles});
+  await fetch(URL + "/user", options)
+  .then(handleHttpErrors);
+}
+
+const createLocation = async (address, city) => {
+    const options = makeOptions("POST", true,{address: address, city: city});
+    await fetch(URL + "/location", options)
     .then(handleHttpErrors);
-    return login(user, password);
+}
+
+const createMatch = async (opponentTeam, judge, type, inDoors) => {
+  const options = makeOptions("POST", true,{opponentTeam: opponentTeam, judge: judge, type: type, inDoors: inDoors});
+  await fetch(URL + "/match", options)
+  .then(handleHttpErrors);
 }
 
 //Update function
@@ -87,7 +107,13 @@ const updatePassword = async (password) => {
   const user = getUser();
   console.log(user);
   const options = makeOptions("PUT", true,{password: password});
-  return fetch(URL + "user", options)
+  return fetch(URL + "/user", options)
+  .then(handleHttpErrors);
+}
+
+const updateMatch = async (id, opponentTeam, judge, type, inDoors, users, location) => {
+  const options = makeOptions("PUT", true,{id: id, opponentTeam: opponentTeam, judge: judge, type: type, inDoors: inDoors, users: users, location: location});
+  return fetch(URL + "/match", options)
   .then(handleHttpErrors);
 }
 
@@ -119,7 +145,7 @@ const getAllUsers = async (userRole, num) => {
       // if(userRole === "admin"){}
       if(num === 1){
         for(const ele of res){
-          users.push({username: ele.username, role: ele.role[0]});
+          users.push({id: ele.id, username: ele.username, role: ele.role[0]});
         }
       }
       else{
@@ -130,6 +156,87 @@ const getAllUsers = async (userRole, num) => {
       
     });
     return users;
+}
+
+const getAllMatches = async () => {
+  let matches = [];
+  await fetch(URL + "/match/all",
+  {
+    method: "GET",
+    headers: {
+      "Content-type": "application/json",
+      'Accept': 'application/json',
+    }
+  })
+  .then(handleHttpErrors)
+  .then(res => {
+    // if(userRole === "admin"){}
+      console.log(res);
+      for(const ele of res){
+        matches.push({id: ele.id, opponentTeam: ele.opponentTeam, judge: ele.judge, type: ele.type, inDoors: ele.inDoors});
+      }
+  });
+  return matches;
+}
+
+const getAllMatchesOnLocation = async (location) => {
+  let matches = [];
+  await fetch(URL + "/match/all/location/"+location,
+  {
+    method: "GET",
+    headers: {
+      "Content-type": "application/json",
+      'Accept': 'application/json',
+    }
+  })
+  .then(handleHttpErrors)
+  .then(res => {
+    // if(userRole === "admin"){}
+      for(const ele of res){
+        matches.push({opponentTeam: ele.opponentTeam, judge: ele.judge, type: ele.type, inDoors: ele.inDoors});
+      }
+  });
+  return matches;
+}
+
+const getPlayersMatches = async (name) => {
+  let matches = [];
+  const options = makeOptions("GET", true);
+  await fetch(URL + "/match/all/player/"+getUser(), options)
+  .then(handleHttpErrors)
+  .then(res => {
+    // if(userRole === "admin"){}
+      for(const ele of res){
+        matches.push({opponentTeam: ele.opponentTeam, judge: ele.judge, type: ele.type, inDoors: ele.inDoors});
+      }
+  });
+  return matches;
+}
+
+const getMatch = async (id) => {
+  const options = makeOptions("GET", true);
+  return fetch(URL + "/match/"+id, options)
+  .then(handleHttpErrors);
+}
+
+const getAllLocations = async () => {
+  let locations = [];
+  await fetch(URL + "/location/all",
+  {
+    method: "GET",
+    headers: {
+      "Content-type": "application/json",
+      'Accept': 'application/json',
+    }
+  })
+  .then(handleHttpErrors)
+  .then(res => {
+    // if(userRole === "admin"){}
+      for(const ele of res){
+        locations.push({locationId: ele.id, address: ele.address});
+      }
+  });
+  return locations;
 }
 
 const makeOptions= (method,addToken,body) =>{
@@ -159,10 +266,19 @@ const makeOptions= (method,addToken,body) =>{
      logout,
      fetchData,
      updatePassword,
+     updateMatch,
      getUser,
      createUser,
+     createMatch,
+     createLocation,
      deleteUser,
      getAllUsers,
+     getAllMatches,
+     getPlayersMatches,
+     getAllMatchesOnLocation,
+     getAllLocations,
+     getMatch,
+     getRole
  }
 }
 const facade = apiFacade();
